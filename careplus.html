@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CarePlus — Confidential Healthcare &amp; Medicine Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============ DESIGN TOKENS ============ */
+  :root{
+    --ink:        #14202B;
+    --ink-deep:   #0D161E;
+    --paper:      #F2EEE3;
+    --paper-deep: #E7E0CE;
+    --paper-card: #FBF9F3;
+    --sage:       #5C7A63;
+    --sage-light: #86A88C;
+    --seal:       #8C3D2E;
+    --seal-dark:  #6E2E22;
+    --brass:      #A2803F;
+    --ink-70:     rgba(20,32,43,.72);
+    --ink-50:     rgba(20,32,43,.52);
+    --paper-80:   rgba(242,238,227,.82);
+    --paper-55:   rgba(242,238,227,.58);
+    --line:       rgba(20,32,43,.14);
+    --line-on-ink:rgba(242,238,227,.18);
+
+    --font-display: 'Domine', Georgia, serif;
+    --font-body:    'IBM Plex Sans', -apple-system, sans-serif;
+    --font-mono:    'IBM Plex Mono', monospace;
+
+    --radius: 5px;
+    --wrap: 1180px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--font-body); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{ display:block; max-width:100%; }
+  a{ color:inherit; text-decoration:none; }
+  ul{ margin:0; padding:0; list-style:none; }
+  h1,h2,h3,h4{ font-family:var(--font-display); margin:0; font-weight:600; letter-spacing:-.01em; }
+  p{ margin:0; }
+  button{ font-family:inherit; cursor:pointer; }
+  .wrap{ max-width:var(--wrap); margin:0 auto; padding:0 32px; }
+  :focus-visible{ outline:2px solid var(--seal); outline-offset:3px; }
+
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    display:inline-flex; align-items:center; gap:8px; color:var(--seal); font-weight:600;
+  }
+  .eyebrow .seal-dot{ width:16px; height:16px; color:var(--seal); }
+  section[data-tone="ink"] .eyebrow{ color:var(--sage-light); }
+  section[data-tone="ink"] .eyebrow .seal-dot{ color:var(--sage-light); }
+
+  .btn{
+    display:inline-flex; align-items:center; gap:10px; padding:14px 26px; border-radius:var(--radius);
+    font-weight:600; font-size:14.5px; border:1px solid transparent; transition:transform .15s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-primary{ background:var(--seal); color:var(--paper); }
+  .btn-primary:hover{ background:var(--seal-dark); }
+  .btn-outline{ background:transparent; border-color:var(--line); color:var(--ink); }
+  .btn-outline:hover{ border-color:var(--ink); }
+  section[data-tone="ink"] .btn-outline{ border-color:var(--line-on-ink); color:var(--paper); }
+  section[data-tone="ink"] .btn-outline:hover{ border-color:var(--paper); }
+
+  /* ============ SEAL SIGNATURE ASSET ============ */
+  .seal-mark{ position:relative; }
+  .seal-mark svg{ width:100%; height:100%; }
+
+  /* ============ NAV ============ */
+  header.site-nav{
+    position:sticky; top:0; z-index:50; background:var(--paper-80); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-row{ display:flex; align-items:center; justify-content:space-between; padding:16px 32px; max-width:var(--wrap); margin:0 auto; }
+  .logo{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-size:19px; font-weight:700; }
+  .logo .seal-mark{ width:30px; height:30px; color:var(--seal); }
+  .nav-links{ display:flex; align-items:center; gap:34px; font-size:14.5px; font-weight:500; }
+  .nav-links a{ position:relative; padding:4px 0; }
+  .nav-links a::after{
+    content:""; position:absolute; left:0; bottom:-2px; width:0; height:1.5px; background:var(--seal);
+    transition:width .2s ease;
+  }
+  .nav-links a:hover::after{ width:100%; }
+  .nav-cta{ display:flex; align-items:center; gap:18px; }
+  .nav-toggle{ display:none; background:none; border:0; padding:8px; }
+  .nav-toggle span, .nav-toggle span::before, .nav-toggle span::after{
+    content:""; display:block; width:22px; height:2px; background:var(--ink); position:relative; transition:.2s;
+  }
+  .nav-toggle span::before{ position:absolute; top:-7px; }
+  .nav-toggle span::after{ position:absolute; top:7px; }
+
+  @media (max-width:880px){
+    .nav-links{
+      position:absolute; top:100%; left:0; right:0; background:var(--paper); flex-direction:column; align-items:flex-start;
+      gap:0; padding:8px 32px 18px; border-bottom:1px solid var(--line); display:none;
+    }
+    .nav-links.open{ display:flex; }
+    .nav-links a{ padding:12px 0; width:100%; }
+    .nav-cta .btn-outline{ display:none; }
+    .nav-toggle{ display:block; }
+  }
+
+  /* ============ SECTION SHELL ============ */
+  section{ padding:104px 0; }
+  section[data-tone="ink"]{ background:var(--ink); color:var(--paper); }
+  section[data-tone="paper"]{ background:var(--paper); }
+  section[data-tone="paper-deep"]{ background:var(--paper-deep); }
+  .section-head{ max-width:640px; margin-bottom:56px; }
+  .section-head h2{ font-size:clamp(28px,4vw,40px); margin-top:14px; }
+  .section-head p{ margin-top:16px; color:var(--ink-70); font-size:16.5px; }
+  section[data-tone="ink"] .section-head p{ color:var(--paper-80); }
+
+  /* ============ HERO ============ */
+  .hero{ padding:96px 0 110px; overflow:hidden; }
+  .hero .wrap{ display:grid; grid-template-columns:1.05fr .95fr; gap:64px; align-items:center; }
+  .hero h1{ font-size:clamp(38px,5vw,58px); line-height:1.06; margin-top:18px; color:var(--paper); }
+  .hero .lede{ margin-top:22px; font-size:18px; color:var(--paper-80); max-width:480px; }
+  .hero-ctas{ display:flex; gap:16px; margin-top:34px; flex-wrap:wrap; }
+  .badges{ display:flex; gap:28px; margin-top:56px; flex-wrap:wrap; }
+  .badge{ display:flex; align-items:center; gap:10px; }
+  .badge .seal-mark{ width:34px; height:34px; color:var(--sage-light); flex-shrink:0; }
+  .badge span{ font-size:13px; font-weight:600; color:var(--paper-80); max-width:100px; line-height:1.3; }
+
+  .hero-art{ position:relative; }
+  .hero-art svg{ width:100%; height:auto; }
+  @keyframes floaty{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-8px);} }
+  .hero-art .parcel{ animation:floaty 6s ease-in-out infinite; }
+
+  @media (max-width:880px){
+    .hero .wrap{ grid-template-columns:1fr; }
+    .hero-art{ order:-1; max-width:280px; margin:0 auto 12px; }
+  }
+
+  /* ============ ABOUT ============ */
+  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:72px; align-items:start; }
+  .about-copy p{ color:var(--ink-70); font-size:16.5px; margin-top:16px; }
+  .about-copy .lead{ font-size:19px; color:var(--ink); font-family:var(--font-display); margin-top:20px; line-height:1.5; }
+  .why-list{ margin-top:28px; display:flex; flex-direction:column; gap:14px; }
+  .why-list li{ display:flex; gap:12px; align-items:flex-start; font-size:15.5px; color:var(--ink); }
+  .why-list .seal-mark{ width:20px; height:20px; color:var(--seal); flex-shrink:0; margin-top:2px; }
+
+  .stat-panel{ background:var(--ink); border-radius:var(--radius); padding:44px 36px; color:var(--paper); }
+  .stat-panel .brand-line{ font-family:var(--font-display); font-size:24px; margin-bottom:36px; color:var(--sage-light); }
+  .stat{ display:flex; justify-content:space-between; align-items:baseline; padding:20px 0; border-top:1px solid var(--line-on-ink); }
+  .stat:first-of-type{ border-top:none; }
+  .stat .num{ font-family:var(--font-mono); font-size:30px; font-weight:600; color:var(--paper); }
+  .stat .label{ font-size:13.5px; color:var(--paper-80); text-align:right; max-width:150px; }
+
+  @media (max-width:880px){ .about-grid{ grid-template-columns:1fr; gap:44px; } }
+
+  /* ============ CONDITIONS ============ */
+  .cond-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .cond-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:30px 26px; display:flex; flex-direction:column; gap:14px; transition:border-color .2s ease, transform .2s ease;
+  }
+  .cond-card:hover{ border-color:var(--sage); transform:translateY(-3px); }
+  .cond-icon{ width:40px; height:40px; color:var(--sage); }
+  .cond-card h3{ font-size:19px; }
+  .cond-card .desc{ color:var(--ink-70); font-size:14.5px; }
+  .cond-card details{ margin-top:4px; border-top:1px solid var(--line); padding-top:14px; }
+  .cond-card summary{
+    list-style:none; cursor:pointer; font-family:var(--font-mono); font-size:12.5px; letter-spacing:.06em;
+    text-transform:uppercase; font-weight:600; color:var(--seal); display:flex; align-items:center; justify-content:space-between;
+  }
+  .cond-card summary::-webkit-details-marker{ display:none; }
+  .cond-card summary::after{ content:"+"; font-family:var(--font-body); font-size:18px; line-height:1; }
+  .cond-card details[open] summary::after{ content:"–"; }
+  .cond-detail{ padding-top:14px; font-size:14px; color:var(--ink-70); }
+  .cond-detail h4{ font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink); margin-bottom:6px; }
+  .cond-detail ul{ margin-bottom:14px; }
+  .cond-detail li{ position:relative; padding-left:14px; margin-bottom:5px; }
+  .cond-detail li::before{ content:"—"; position:absolute; left:0; color:var(--sage); }
+
+  @media (max-width:940px){ .cond-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:620px){ .cond-grid{ grid-template-columns:1fr; } }
+
+  /* ============ MEDICINES ============ */
+  .med-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .med-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+    display:flex; flex-direction:column; transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .med-card:hover{ transform:translateY(-3px); box-shadow:0 14px 30px rgba(20,32,43,.10); }
+  .med-visual{ background:var(--paper-deep); padding:26px 0 10px; display:flex; justify-content:center; position:relative; }
+  .med-visual .accent-bar{ position:absolute; top:0; left:0; right:0; height:5px; }
+  .med-body{ padding:22px 24px 26px; display:flex; flex-direction:column; gap:10px; flex:1; }
+  .med-body h3{ font-size:18px; }
+  .med-body .tag{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--seal); font-weight:600; }
+  .med-body .desc{ font-size:14.5px; color:var(--ink-70); }
+  .med-body .benefits{ margin-top:2px; display:flex; flex-direction:column; gap:5px; }
+  .med-body .benefits li{ font-size:13.5px; color:var(--ink-70); position:relative; padding-left:14px; }
+  .med-body .benefits li::before{ content:"✓"; position:absolute; left:0; color:var(--sage); font-size:12px; top:2px; }
+  .med-body .usage{ font-size:12.5px; color:var(--ink-50); font-style:italic; margin-top:2px; }
+  .med-body .btn{ margin-top:auto; align-self:flex-start; }
+
+  @media (max-width:940px){ .med-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:620px){ .med-grid{ grid-template-columns:1fr; } }
+
+  .catalog-note{
+    margin-top:40px; font-size:13.5px; color:var(--ink-50); border-top:1px solid var(--line); padding-top:20px; max-width:760px;
+  }
+
+  /* ============ CONTACT ============ */
+  .contact-grid{ display:grid; grid-template-columns:1fr 1fr; gap:64px; }
+  .form-card{ background:var(--ink-deep); border-radius:var(--radius); padding:38px; }
+  .field{ margin-bottom:18px; }
+  .field label{ display:block; font-size:12.5px; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.06em; color:var(--paper-80); margin-bottom:7px; }
+  .field input, .field textarea{
+    width:100%; background:var(--paper); border:1px solid transparent; border-radius:4px; padding:12px 14px;
+    font-family:var(--font-body); font-size:14.5px; color:var(--ink); resize:vertical;
+  }
+  .field input:focus, .field textarea:focus{ outline:2px solid var(--sage-light); outline-offset:1px; }
+  .form-note{ font-size:12.5px; color:var(--paper-80); margin-top:6px; }
+  #form-success{ display:none; background:var(--sage); color:var(--paper); padding:14px 16px; border-radius:4px; font-size:14px; margin-bottom:18px; }
+  #form-success.show{ display:block; }
+
+  .contact-side h3{ font-size:22px; color:var(--paper); }
+  .contact-side .privacy-copy{ margin-top:14px; color:var(--paper-80); font-size:15px; max-width:420px; }
+  .contact-methods{ margin-top:32px; display:flex; flex-direction:column; gap:18px; }
+  .contact-method{ display:flex; align-items:center; gap:14px; }
+  .contact-method .seal-mark{ width:30px; height:30px; color:var(--sage-light); flex-shrink:0; }
+  .contact-method .cm-label{ font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--paper-80); }
+  .contact-method .cm-value{ font-size:15px; font-weight:600; color:var(--paper); }
+  .contact-method a.cm-value:hover{ color:var(--sage-light); }
+
+  @media (max-width:880px){ .contact-grid{ grid-template-columns:1fr; } }
+
+  /* ============ FOOTER ============ */
+  footer{ background:var(--ink-deep); color:var(--paper-80); padding:64px 0 28px; }
+  .footer-grid{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; padding-bottom:44px; border-bottom:1px solid var(--line-on-ink); }
+  .footer-brand .logo{ color:var(--paper); }
+  .footer-brand .logo .seal-mark{ color:var(--sage-light); }
+  .footer-brand p{ margin-top:16px; font-size:14px; max-width:280px; color:var(--paper-80); }
+  .footer-col h4{ font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--paper); margin-bottom:16px; }
+  .footer-col ul{ display:flex; flex-direction:column; gap:10px; }
+  .footer-col a{ font-size:14px; color:var(--paper-80); }
+  .footer-col a:hover{ color:var(--paper); }
+  .social-row{ display:flex; gap:14px; margin-top:18px; }
+  .social-row a{ width:32px; height:32px; border:1px solid var(--line-on-ink); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .social-row svg{ width:15px; height:15px; color:var(--paper-80); }
+  .social-row a:hover{ border-color:var(--sage-light); }
+  .social-row a:hover svg{ color:var(--sage-light); }
+  .footer-bottom{ display:flex; justify-content:space-between; align-items:center; padding-top:26px; flex-wrap:wrap; gap:10px; }
+  .footer-bottom p{ font-size:12.5px; color:var(--paper-55); }
+  .disclaimer{ font-size:12px; color:var(--paper-55); max-width:900px; margin-top:18px; line-height:1.6; }
+
+  @media (max-width:820px){
+    .footer-grid{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:520px){
+    .footer-grid{ grid-template-columns:1fr; }
+    .footer-bottom{ flex-direction:column; align-items:flex-start; }
+  }
+
+  /* reveal-on-scroll */
+  .reveal{ opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ============ REUSABLE SEAL SYMBOL ============ -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="seal-symbol" viewBox="0 0 60 60">
+    <circle cx="30" cy="26" r="21" fill="none" stroke="currentColor" stroke-width="2.4"/>
+    <circle cx="30" cy="26" r="14.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.6 3.4"/>
+    <path d="M30 18v16M22 26h16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <path d="M20 44 L23 58 L30 51 L37 58 L40 44" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="icon-lock" viewBox="0 0 24 24">
+    <rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+    <circle cx="12" cy="16" r="1.6" fill="currentColor"/>
+  </symbol>
+
+  <symbol id="icon-mortar" viewBox="0 0 24 24">
+    <path d="M5 12h14a7 7 0 0 1-14 0Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M9 12c0-3 1-5 1-7M15 12c0-3-1-5-1-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M17 4l-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="icon-box" viewBox="0 0 24 24">
+    <path d="M4 8l8-4 8 4-8 4-8-4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M4 8v8l8 4 8-4V8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M12 12v8" stroke="currentColor" stroke-width="1.8"/>
+  </symbol>
+
+  <symbol id="icon-heart-pulse" viewBox="0 0 24 24">
+    <path d="M12 20S3 14 3 8.5A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 9 2.5C21 14 12 20 12 20Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M6 12h2.5l1.5-3 2 5 1.5-3H18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
+  <symbol id="icon-timer" viewBox="0 0 24 24">
+    <circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="1.7"/>
+    <path d="M12 9v4l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M9 2h6M12 2v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="icon-flame" viewBox="0 0 24 24">
+    <path d="M12 3s5 4.5 5 9a5 5 0 0 1-10 0c0-1.2.5-2 1-2.7.3 1 1 1.7 1 1.7-.4-2 1-3.5 1-5.5 0 1.3 1.2 2 2 3.5.5-1 .3-2.3 0-3.5-.3-1.2 0-2.5 1-3.8Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  </symbol>
+
+  <symbol id="icon-bolt" viewBox="0 0 24 24">
+    <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+  </symbol>
+
+  <symbol id="icon-balance" viewBox="0 0 24 24">
+    <path d="M12 3v16M12 6h9M12 6H3M6 6l-3 6h6l-3-6ZM18 6l-3 6h6l-3-6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M8 19h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="icon-shield" viewBox="0 0 24 24">
+    <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+    <path d="M12 9v6M9 12h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="icon-bottle" viewBox="0 0 60 70">
+    <path d="M24 6h12v9c4 3 7 7 7 13v28a6 6 0 0 1-6 6H23a6 6 0 0 1-6-6V28c0-6 3-10 7-13Z" fill="none" stroke="currentColor" stroke-width="2"/>
+    <rect x="22" y="2" width="16" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+    <path d="M17 38h26" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 3"/>
+  </symbol>
+
+  <symbol id="icon-whatsapp" viewBox="0 0 24 24">
+    <path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.3A9 9 0 1 0 12 3Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M8.5 8.8c.2-.6.7-.6 1-.6h.6c.2 0 .5 0 .7.5s.7 1.7.8 1.8.1.3 0 .5-.2.3-.4.5-.4.4-.2.8c.3.5 1.1 1.6 2.3 2.2.7.4.9.3 1.1.1s.7-.7.9-1 .4-.2.7-.1 1.7.8 2 .9.5.2.5.4-.1 1-.5 1.4-1.3 1-2.3.8c-1-.2-3.1-1.1-4.3-2.9-1-1.5-1.3-2.6-1.4-3Z" fill="currentColor" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-mail" viewBox="0 0 24 24">
+    <rect x="3" y="5" width="18" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <path d="M4 6.5l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
+  <symbol id="icon-check" viewBox="0 0 24 24">
+    <path d="M5 12l5 5L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
+  <symbol id="social-instagram" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <circle cx="17" cy="7" r="1" fill="currentColor"/>
+  </symbol>
+  <symbol id="social-x" viewBox="0 0 24 24">
+    <path d="M4 4l16 16M20 4 4 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="social-linkedin" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    <circle cx="8" cy="9" r="1.2" fill="currentColor"/>
+    <path d="M8 12v6M12 12v6M12 14.5c0-1.5 4-1.5 4 0V18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<!-- ============ NAV ============ -->
+<header class="site-nav">
+  <div class="nav-row">
+    <a class="logo" href="#top">
+      <span class="seal-mark"><svg><use href="#seal-symbol"/></svg></span>
+      CarePlus
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#top">Home</a>
+      <a href="#about">About</a>
+      <a href="#conditions">Treatments</a>
+      <a href="#medicines">Medicines</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-outline" href="#contact">Contact Us</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 1. HERO ============ -->
+<section id="top" class="hero" data-tone="ink">
+  <div class="wrap">
+    <div class="hero-copy">
+      <span class="eyebrow"><svg class="seal-dot"><use href="#seal-symbol"/></svg> Private care, sealed and delivered</span>
+      <h1>Confidential Healthcare &amp; Medicine Delivery</h1>
+      <p class="lede">CarePlus connects you with licensed physicians and pharmacist-formulated treatments for men's health — reviewed discreetly, delivered directly, never disclosed.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#conditions">Explore Medicines</a>
+        <a class="btn btn-outline" href="#contact">Contact Us</a>
+      </div>
+      <div class="badges">
+        <div class="badge">
+          <span class="seal-mark"><svg><use href="#icon-lock"/></svg></span>
+          <span>Privacy Protected</span>
+        </div>
+        <div class="badge">
+          <span class="seal-mark"><svg><use href="#icon-mortar"/></svg></span>
+          <span>Pharmacist Formulated</span>
+        </div>
+        <div class="badge">
+          <span class="seal-mark"><svg><use href="#icon-box"/></svg></span>
+          <span>Discreet Delivery</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 420 420" fill="none">
+        <path d="M60 210c40-30 100-30 150 0M40 250c60-40 130-40 190 0" stroke="#5C7A63" stroke-opacity=".35" stroke-width="1.4" stroke-dasharray="3 6"/>
+        <g class="parcel">
+          <rect x="120" y="140" width="180" height="150" rx="6" fill="#1B2833" stroke="#86A88C" stroke-width="1.5"/>
+          <path d="M120 190h180M210 190v100" stroke="#86A88C" stroke-opacity=".5" stroke-width="1.2"/>
+          <path d="M120 155 210 190 300 155" stroke="#86A88C" stroke-opacity=".6" stroke-width="1.2" fill="none"/>
+          <g transform="translate(178,205)">
+            <use href="#seal-symbol" width="64" height="64" color="#8C3D2E"/>
+          </g>
+        </g>
+        <circle cx="335" cy="120" r="3" fill="#A2803F"/>
+        <circle cx="85" cy="305" r="3" fill="#A2803F"/>
+        <circle cx="345" cy="300" r="2" fill="#86A88C"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. ABOUT ============ -->
+<section id="about" data-tone="paper">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><svg class="seal-dot"><use href="#seal-symbol"/></svg> About CarePlus</span>
+      <h2>Care that respects your privacy as much as your health.</h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-copy reveal">
+        <p>CarePlus is a telehealth platform built around one idea: sensitive health conditions deserve the same clinical rigor as any other diagnosis — without the waiting room. Every consultation is reviewed by a licensed physician, and every order ships in unmarked, sealed packaging.</p>
+        <p class="lead">"To make effective treatment for sensitive health conditions as simple, private, and dignified as it should always have been."</p>
+        <ul class="why-list">
+          <li><svg class="seal-mark"><use href="#icon-check"/></svg> Every prescription is reviewed by a licensed physician before it ships.</li>
+          <li><svg class="seal-mark"><use href="#icon-check"/></svg> Unmarked, sealed packaging — no logos, no labels, no surprises.</li>
+          <li><svg class="seal-mark"><use href="#icon-check"/></svg> A dedicated care team available for follow-up, adjustments, and questions.</li>
+          <li><svg class="seal-mark"><use href="#icon-check"/></svg> Transparent pricing with no hidden consultation fees.</li>
+        </ul>
+      </div>
+      <div class="stat-panel reveal">
+        <div class="brand-line">Real Medicine, Real Results.</div>
+        <div class="stat"><span class="label">Patients Helped</span><span class="num">40,000+</span></div>
+        <div class="stat"><span class="label">Treatments Available</span><span class="num">25+</span></div>
+        <div class="stat"><span class="label">Avg. Physician Response</span><span class="num">&lt; 2 hrs</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. CONDITIONS & TREATMENTS ============ -->
+<section id="conditions" data-tone="paper-deep">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><svg class="seal-dot"><use href="#seal-symbol"/></svg> Conditions &amp; Treatments</span>
+      <h2>Find your condition, understand your options.</h2>
+      <p>Every pathway below starts with a private consultation — no walk-ins, no waiting rooms, no judgment.</p>
+    </div>
+    <div class="cond-grid">
+
+      <div class="cond-card reveal">
+        <svg class="cond-icon"><use href="#icon-heart-pulse"/></svg>
+        <h3>Erectile Dysfunction</h3>
+        <p class="desc">Difficulty achieving or maintaining an erection firm enough for intimacy — one of the most common, and most treatable, men's health concerns.</p>
+        <details>
+          <summary>Learn More</summary>
+          <div class="cond-detail">
+            <h4>Common Symptoms</h4>
+            <ul><li>Reduced firmness or difficulty sustaining an erection</li><li>Lowered confidence around intimacy</li></ul>
+            <h4>Treatment Options</h4>
+            <ul><li>Oral therapy, prescribed and dosed by your physician</li><li>Lifestyle and cardiovascular guidance</li></ul>
+          </div>
+        </details>
+      </div>
+
+      <div class="cond-card reveal">
+        <svg class="cond-icon"><use href="#icon-timer"/></svg>
+        <h3>Premature Ejaculation</h3>
+        <p class="desc">Ejaculation that occurs sooner than desired, often linked to sensitivity or anxiety, and highly responsive to treatment.</p>
+        <details>
+          <summary>Learn More</summary>
+          <div class="cond-detail">
+            <h4>Common Symptoms</h4>
+            <ul><li>Limited control over timing during intimacy</li><li>Performance-related anxiety</li></ul>
+            <h4>Treatment Options</h4>
+            <ul><li>Behavioral techniques guided by your care team</li><li>Prescription oral or topical options</li></ul>
+          </div>
+        </details>
+      </div>
+
+      <div class="cond-card reveal">
+        <svg class="cond-icon"><use href="#icon-flame"/></svg>
+        <h3>Low Libido</h3>
+        <p class="desc">A noticeable drop in sexual desire, which can stem from stress, hormones, or underlying health factors.</p>
+        <details>
+          <summary>Learn More</summary>
+          <div class="cond-detail">
+            <h4>Common Symptoms</h4>
+            <ul><li>Reduced interest in intimacy</li><li>Fatigue or low motivation</li></ul>
+            <h4>Treatment Options</h4>
+            <ul><li>Hormone panel and physician review</li><li>Personalized supplementation plan</li></ul>
+          </div>
+        </details>
+      </div>
+
+      <div class="cond-card reveal">
+        <svg class="cond-icon"><use href="#icon-bolt"/></svg>
+        <h3>Stamina Enhancement</h3>
+        <p class="desc">Support for lasting energy and physical performance, tailored to your baseline and goals.</p>
+        <details>
+          <summary>Learn More</summary>
+          <div class="cond-detail">
+            <h4>Common Symptoms</h4>
+            <ul><li>Early fatigue during physical activity</li><li>Slower recovery between sessions</li></ul>
+            <h4>Treatment Options</h4>
+            <ul><li>Physician-guided wellness formulas</li><li>Nutrition and recovery guidance</li></ul>
+          </div>
+        </details>
+      </div>
+
+      <div class="cond-card reveal">
+        <svg class="cond-icon"><use href="#icon-balance"/></svg>
+        <h3>Hormone Health</h3>
+        <p class="desc">Balanced testosterone and hormone levels are foundational to energy, mood, and long-term wellness.</p>
+        <details>
+          <summary>Learn More</summary>
+          <div class="cond-detail">
+            <h4>Common Symptoms</h4>
+            <ul><li>Low energy or mood shifts</li><li>Changes in muscle tone or sleep</li></ul>
+            <h4>Treatment Options</h4>
+            <ul><li>Lab-based hormone panel</li><li>Physician-managed treatment plan</li></ul>
+          </div>
+        </details>
+      </div>
+
+      <div class="cond-card reveal">
+        <svg class="cond-icon"><use href="#icon-shield"/></svg>
+        <h3>Men's Wellness Solutions</h3>
+        <p class="desc">General preventive and everyday wellness support, from multivitamins to ongoing check-ins.</p>
+        <details>
+          <summary>Learn More</summary>
+          <div class="cond-detail">
+            <h4>Common Symptoms</h4>
+            <ul><li>General fatigue or nutritional gaps</li><li>Interest in preventive care</li></ul>
+            <h4>Treatment Options</h4>
+            <ul><li>Wellness bundles and check-in calls</li><li>Ongoing physician access</li></ul>
+          </div>
+        </details>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. MEDICINES CATALOG ============ -->
+<section id="medicines" data-tone="paper">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><svg class="seal-dot"><use href="#seal-symbol"/></svg> Medicines Catalog</span>
+      <h2>Pharmacist-formulated, physician-prescribed.</h2>
+      <p>Every product below requires a completed consultation. Nothing ships without physician approval.</p>
+    </div>
+    <div class="med-grid">
+
+      <div class="med-card reveal">
+        <div class="med-visual"><div class="accent-bar" style="background:var(--seal)"></div><svg style="width:70px;height:82px;color:var(--seal)"><use href="#icon-bottle"/></svg></div>
+        <div class="med-body">
+          <span class="tag">ED Therapy</span>
+          <h3>CarePlus Rise</h3>
+          <p class="desc">Oral PDE5-inhibitor therapy for on-demand or daily use, matched to your response and health profile.</p>
+          <ul class="benefits"><li>Fast-acting oral formula</li><li>Personalized titration by your physician</li></ul>
+          <p class="usage">Dosing determined by your prescribing physician.</p>
+          <a class="btn btn-outline med-request" data-product="CarePlus Rise" href="#contact">Contact for Consultation</a>
+        </div>
+      </div>
+
+      <div class="med-card reveal">
+        <div class="med-visual"><div class="accent-bar" style="background:var(--sage)"></div><svg style="width:70px;height:82px;color:var(--sage)"><use href="#icon-bottle"/></svg></div>
+        <div class="med-body">
+          <span class="tag">PE Support</span>
+          <h3>CarePlus Endure</h3>
+          <p class="desc">A combined behavioral and prescription approach to help extend control and confidence.</p>
+          <ul class="benefits"><li>Oral or topical options</li><li>Paired with care-team coaching</li></ul>
+          <p class="usage">Usage plan set during your consultation.</p>
+          <a class="btn btn-outline med-request" data-product="CarePlus Endure" href="#contact">Contact for Consultation</a>
+        </div>
+      </div>
+
+      <div class="med-card reveal">
+        <div class="med-visual"><div class="accent-bar" style="background:var(--brass)"></div><svg style="width:70px;height:82px;color:var(--brass)"><use href="#icon-bottle"/></svg></div>
+        <div class="med-body">
+          <span class="tag">Libido &amp; Hormone</span>
+          <h3>CarePlus Ignite</h3>
+          <p class="desc">A hormone-informed formula designed to support healthy desire and energy from the inside out.</p>
+          <ul class="benefits"><li>Built from your hormone panel results</li><li>Reviewed monthly by your physician</li></ul>
+          <p class="usage">Formulation adjusted to lab results.</p>
+          <a class="btn btn-outline med-request" data-product="CarePlus Ignite" href="#contact">Contact for Consultation</a>
+        </div>
+      </div>
+
+      <div class="med-card reveal">
+        <div class="med-visual"><div class="accent-bar" style="background:var(--seal)"></div><svg style="width:70px;height:82px;color:var(--seal)"><use href="#icon-bottle"/></svg></div>
+        <div class="med-body">
+          <span class="tag">Stamina</span>
+          <h3>CarePlus Stamina+</h3>
+          <p class="desc">A daily wellness blend built to support lasting energy and physical performance.</p>
+          <ul class="benefits"><li>Daily oral supplement</li><li>Paired with recovery guidance</li></ul>
+          <p class="usage">Take as directed by your care plan.</p>
+          <a class="btn btn-outline med-request" data-product="CarePlus Stamina+" href="#contact">Contact for Consultation</a>
+        </div>
+      </div>
+
+      <div class="med-card reveal">
+        <div class="med-visual"><div class="accent-bar" style="background:var(--sage)"></div><svg style="width:70px;height:82px;color:var(--sage)"><use href="#icon-bottle"/></svg></div>
+        <div class="med-body">
+          <span class="tag">Hormone Health</span>
+          <h3>CarePlus Balance</h3>
+          <p class="desc">A structured testosterone-support program, starting with a full lab panel and physician review.</p>
+          <ul class="benefits"><li>Includes at-home lab kit</li><li>Ongoing physician-managed dosing</li></ul>
+          <p class="usage">Plan built around your lab results.</p>
+          <a class="btn btn-outline med-request" data-product="CarePlus Balance" href="#contact">Contact for Consultation</a>
+        </div>
+      </div>
+
+      <div class="med-card reveal">
+        <div class="med-visual"><div class="accent-bar" style="background:var(--brass)"></div><svg style="width:70px;height:82px;color:var(--brass)"><use href="#icon-bottle"/></svg></div>
+        <div class="med-body">
+          <span class="tag">Wellness Bundle</span>
+          <h3>CarePlus Complete</h3>
+          <p class="desc">A foundational multivitamin and wellness bundle with regular physician check-ins.</p>
+          <ul class="benefits"><li>Daily multivitamin formula</li><li>Quarterly wellness check-in</li></ul>
+          <p class="usage">One capsule daily, or as advised.</p>
+          <a class="btn btn-outline med-request" data-product="CarePlus Complete" href="#contact">Contact for Consultation</a>
+        </div>
+      </div>
+
+    </div>
+    <p class="catalog-note">All CarePlus treatments are prescription products dispensed only after a licensed physician confirms they're appropriate for you. Product names shown are CarePlus formulations, not third-party brands.</p>
+  </div>
+</section>
+
+<!-- ============ 5. CONTACT & CONSULTATION ============ -->
+<section id="contact" data-tone="ink">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><svg class="seal-dot"><use href="#seal-symbol"/></svg> Contact &amp; Consultation</span>
+      <h2>Start with a private consultation.</h2>
+    </div>
+    <div class="contact-grid">
+      <div class="form-card reveal">
+        <div id="form-success">Thank you — your message is sealed and on its way. Our care team will respond within one business day.</div>
+        <form id="consultForm">
+          <div class="field"><label for="name">Name</label><input id="name" name="name" type="text" required></div>
+          <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+          <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" required></div>
+          <div class="field"><label for="message">Message</label><textarea id="message" name="message" rows="4" placeholder="Tell us what you're looking for..."></textarea></div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Request Consultation</button>
+          <p class="form-note">Encrypted in transit. Reviewed only by our licensed clinical team.</p>
+        </form>
+      </div>
+      <div class="contact-side reveal">
+        <h3>Prefer to talk it through?</h3>
+        <p class="privacy-copy">Every conversation with CarePlus is confidential. We never share your information with employers, insurers, or third parties — full stop.</p>
+        <div class="contact-methods">
+          <div class="contact-method">
+            <svg class="seal-mark"><use href="#icon-whatsapp"/></svg>
+            <div><div class="cm-label">WhatsApp</div><a class="cm-value" href="https://wa.me/910000000000?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%20CarePlus" target="_blank" rel="noopener">Chat with our care team</a></div>
+          </div>
+          <div class="contact-method">
+            <svg class="seal-mark"><use href="#icon-mail"/></svg>
+            <div><div class="cm-label">Email Support</div><a class="cm-value" href="mailto:care@careplus.example">care@careplus.example</a></div>
+          </div>
+          <div class="contact-method">
+            <svg class="seal-mark"><use href="#icon-lock"/></svg>
+            <div><div class="cm-label">Privacy Assurance</div><span class="cm-value">HIPAA-aligned handling, always.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href="#top">
+          <span class="seal-mark"><svg><use href="#seal-symbol"/></svg></span>
+          CarePlus
+        </a>
+        <p>CarePlus provides confidential healthcare solutions designed to help patients access trusted treatments with privacy and convenience.</p>
+        <div class="social-row">
+          <a href="#" aria-label="Instagram"><svg><use href="#social-instagram"/></svg></a>
+          <a href="#" aria-label="X"><svg><use href="#social-x"/></svg></a>
+          <a href="#" aria-label="LinkedIn"><svg><use href="#social-linkedin"/></svg></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#top">Home</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#conditions">Treatments</a></li>
+          <li><a href="#medicines">Medicines</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms &amp; Conditions</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:care@careplus.example">care@careplus.example</a></li>
+          <li><a href="https://wa.me/910000000000">WhatsApp Support</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 CarePlus. All Rights Reserved.</p>
+      <p>Prescription treatments require review and approval by a licensed physician.</p>
+    </div>
+    <p class="disclaimer">CarePlus is a telehealth platform. Information on this site is for general educational purposes and is not a substitute for professional medical advice, diagnosis, or treatment. Prescription medications are dispensed only following an independent clinical review by a licensed provider.</p>
+  </div>
+</footer>
+
+<script>
+  // Mobile nav toggle
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  navToggle.addEventListener('click', () => {
+    const isOpen = navLinks.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', isOpen);
+  });
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    navLinks.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  }));
+
+  // Prefill contact message from "Contact for Consultation" buttons
+  document.querySelectorAll('.med-request').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const product = btn.getAttribute('data-product');
+      const msg = document.getElementById('message');
+      if (msg && !msg.value) {
+        msg.value = `I'm interested in learning more about ${product}.`;
+      }
+    });
+  });
+
+  // Fake form submit (no backend wired up)
+  const form = document.getElementById('consultForm');
+  const success = document.getElementById('form-success');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    success.classList.add('show');
+    form.reset();
+    success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target); }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
